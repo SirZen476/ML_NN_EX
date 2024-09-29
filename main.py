@@ -138,8 +138,11 @@ def train_model(model,optimizer):
         #compar val acc
         _, predicted = torch.max(model(ValidInput), 1)
         Validacc = (ValidLabel == predicted).sum().float() / len(ValidLabel)
-        print("[EPOCH]: %i, [LOSS]: %.6f, [TRAIN ACCURACY]: %.3f, [VALID ACCURACY]: %.3f" % (
-        t, loss.item(), acc,Validacc))
+        '''print("[EPOCH]: %i, [LOSS]: %.6f, [TRAIN ACCURACY]: %.3f, [VALID ACCURACY]: %.3f" % (
+        t, loss.item(), acc,Validacc))''' # to print every epoch
+        if (t== n_epochs-1 ):# for last print - to see change
+            print("[EPOCH]: %i, [LOSS]: %.6f, [TRAIN ACCURACY]: %.3f, [VALID ACCURACY]: %.3f" % (
+                t, loss.item(), acc, Validacc))
         display.clear_output(wait=True)
         # Save error on each epoch
         train_acc.append(acc)
@@ -151,5 +154,41 @@ def train_model(model,optimizer):
 learning_rate = 1e-03
 Linear_model_optimizer = torch.optim.SGD(Linear_model.parameters(), lr=learning_rate)
 NN_model_optimizer = torch.optim.SGD(NN_model.parameters(), lr=learning_rate)
+# training Linear model
+print("Linear Model : \n")
+train_acc_Linear_model, valid_acc_Linear_model = train_model(Linear_model, Linear_model_optimizer)# val acc at end is 0.519
+# training NN
+print("NN Model : \n")
+train_acc_NN_model, valid_acc_NN_model = train_model(NN_model, NN_model_optimizer)# vall acc is 0.527 - not oprimized
 
-train_acc_Linear_model, valid_acc_Linear_model = train_model(Linear_model, Linear_model_optimizer)
+#first - optimize the learning rate
+learning_rate = 0.05
+Linear_model_optimizer.param_groups[0]['lr'] = learning_rate
+NN_model_optimizer.param_groups[0]['lr'] = learning_rate
+
+Linear_model.load_state_dict(Linear_model_initial_weights)
+NN_model.load_state_dict(NN_model_initial_weights)
+# training Linear model
+print("Linear Model(opt learning rate) : \n")
+train_acc_Linear_model, valid_acc_Linear_model = train_model(Linear_model, Linear_model_optimizer)# val acc at end is 0.515 - no big change from learning rate
+# training NN
+print("NN Model(opt learning rate) : \n")
+train_acc_NN_model, valid_acc_NN_model = train_model(NN_model, NN_model_optimizer)# vall acc is 0.915 - huge improvment
+
+# optimizer selection - we will use adams optimizer
+Linear_model_optimizer = torch.optim.Adam(Linear_model.parameters())
+NN_model_optimizer = torch.optim.Adam(NN_model.parameters())
+
+Linear_model.load_state_dict(Linear_model_initial_weights)
+NN_model.load_state_dict(NN_model_initial_weights)
+
+n_epochs = 500# decrease epochs for training
+
+print("Linear Model (adam): \n")
+train_acc_Linear_model, valid_acc_Linear_model = train_model(Linear_model, Linear_model_optimizer)# val acc at end is 0.519 - no big change from learning rate or adam
+# training NN
+print("NN Model : (adam) \n")
+train_acc_NN_model, valid_acc_NN_model = train_model(NN_model, NN_model_optimizer)# vall acc is 0.994 - more improvmnent, less epochs
+
+
+
