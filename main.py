@@ -190,5 +190,46 @@ train_acc_Linear_model, valid_acc_Linear_model = train_model(Linear_model, Linea
 print("NN Model : (adam) \n")
 train_acc_NN_model, valid_acc_NN_model = train_model(NN_model, NN_model_optimizer)# vall acc is 0.994 - more improvmnent, less epochs
 
+# plot of learning curves
+def plot_curves(train, valid, name):
+  plt.title(f'Training Curve - {name}')
+  plt.plot(range(len(train)), train, label="Train")
+  plt.plot(range(len(valid)), valid, label="Validation")
+  plt.xlabel("Epoch")
+  plt.ylabel("Accuracy")
+  plt.legend(loc='best')
+  plt.show()
 
+plot_curves(train_acc_Linear_model, valid_acc_Linear_model, "Linear")
+plot_curves(train_acc_NN_model, valid_acc_NN_model, "Neural Network ")
+plt.show()
+
+# we can see that NN performance is much better - linear training curve is not good
+# now to plot model pred with data
+def plot_model(X, y, model):
+    mesh = np.arange(-1.1, 1.1, 0.01)
+    xx, yy = np.meshgrid(mesh, mesh)
+    with torch.no_grad():
+        data = torch.from_numpy(np.vstack((xx.reshape(-1), yy.reshape(-1))).T).float()
+        Z = model(data).detach()
+    Z = np.argmax(Z, axis=1).reshape(xx.shape)
+
+
+    plt.subplot(1,3,1)
+    plot_data(X, y)
+
+    plt.subplot(1,3,2)
+    plt.contourf(xx, yy, Z, cmap=plt.cm.Spectral, alpha=0.3)
+    cartesian_coordinate_system()
+
+    plt.subplot(1,3,3)
+    plt.contourf(xx, yy, Z, cmap=plt.cm.Spectral, alpha=0.3)
+    plot_data(X, y)
+    plt.show()
+
+# plot trained model
+plt.title("Linear model predictions:")
+plot_model(X, y, Linear_model)
+plt.title("NN model predictions:")
+plot_model(X, y, NN_model)
 
