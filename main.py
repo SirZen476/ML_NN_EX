@@ -68,7 +68,7 @@ plot_data(X,y)
 plt.show()
 #partition data to train and val:
 
-TrainInput,TrainLabel,ValInput,ValLabel = X[:2500,:],y[:2500],X[2501:,:],y[2501:]
+TrainInput,TrainLabel,ValidInput,ValidLabel = X[:2500,:],y[:2500],X[2501:,:],y[2501:]
 # model 1 to train linear model 2x3 affine mapping as 2x100 to 100x3 mapping
 
 H= 100 # num of hidden units
@@ -116,14 +116,15 @@ n_epochs = 1000
 
 
 def train_model(model,optimizer):
-    train_acc, val_acc = [], []
+    train_acc = []
+    valid_acc = []
     #Training
     for t in range(n_epochs):
         #premutate the data and divide to minibatch
         p = np.random.permutation(len(TrainInput))
         train_data = TrainInput[p]
         train_label = TrainLabel[p]
-        acc, val_acc = 0.0, 0.0
+        acc, Validacc = 0.0, 0.0
         for i in range(0, train_data.shape[0], minibatch_size):
             pred = model(train_data[i:i+minibatch_size])# calc pred
             loss = criterion(pred,train_label[i:i+minibatch_size])# calc loss
@@ -135,16 +136,16 @@ def train_model(model,optimizer):
         score, predicted = torch.max(model(train_data), 1)
         acc = (train_label == predicted).sum().float() / len(train_label)
         #compar val acc
-        _, predicted = torch.max(model(ValInput), 1)
-        Valacc = (ValLabel == predicted).sum().float() / len(ValLabel)
+        _, predicted = torch.max(model(ValidInput), 1)
+        Validacc = (ValidLabel == predicted).sum().float() / len(ValidLabel)
         print("[EPOCH]: %i, [LOSS]: %.6f, [TRAIN ACCURACY]: %.3f, [VALID ACCURACY]: %.3f" % (
-        t, loss.item(), acc,Valacc))
+        t, loss.item(), acc,Validacc))
         display.clear_output(wait=True)
         # Save error on each epoch
         train_acc.append(acc)
-        val_acc.append(Valdacc)
+        valid_acc.append(Validacc)
 
-    return train_acc, val_acc
+    return train_acc, valid_acc
 
 # we use the optim package to apply SGD for our parameter updates
 learning_rate = 1e-03
